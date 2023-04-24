@@ -16,49 +16,40 @@ app.get("/ping", (req, res) => {
 
 const port = process.env.PORT || 5001;
 
-/*---------------------APIs--------------------------*/
+/*---------------------Dialogflow Webhook--------------------------*/
+
+const intentResponses = {
+    "Default Welcome Intent": {
+        fulfillmentMessages: [
+            {
+                text: {
+                    text: [
+                        "Hello There, This is a test webhook to integrtate with dialogflow and handle stripe payment"
+                    ]
+                }
+            }
+        ]
+    },
+    default: {
+        fulfillmentMessages: [
+            {
+                text: {
+                    text: [
+                        "Sorry, I didn't get that. Please try again"
+                    ]
+                }
+            }
+        ]
+    }
+};
 
 app.post('/webhook', async (req, res) => {
-
     try {
-        const body = req.body;
-
-        const intentName = body.queryResult.intent.displayName
-        const params = body.queryResult.parameters
-
-        switch (intentName) {
-            case "Default Welcome Intent": {
-                res.send({
-                    "fulfillmentMessages": [
-                        {
-                            "text": {
-                                "text": [
-                                    "Hello There, This is a test webhook to integrtate with dialogflow and handle stripe payment"
-                                ]
-                            }
-                        }
-                    ]
-                })
-                break;
-            }
-
-            default: {
-                res.send({
-                    "fulfillmentMessages": [
-                        {
-                            "text": {
-                                "text": [
-                                    "Sorry, I didn't get that. Please try again"
-                                ]
-                            }
-                        }
-                    ]
-                })
-            }
-        }
-
-    }
-    catch (err) {
+        const { queryResult } = req.body;
+        const intentName = queryResult.intent.displayName;
+        const response = intentResponses[intentName] || intentResponses.default;
+        res.send({ fulfillmentMessages: response.fulfillmentMessages });
+    } catch (err) {
         console.log(err);
         res.send({
             "fulfillmentMessages": [
@@ -72,7 +63,6 @@ app.post('/webhook', async (req, res) => {
             ]
         })
     }
-
 });
 
 /*---------------------Static Files--------------------------*/
