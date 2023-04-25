@@ -60,6 +60,31 @@ app.post('/webhook', async (req, res) => {
                     success_url: 'https://yourwebsite.com/success',
                     cancel_url: 'https://yourwebsite.com/cancel',
                 });
+                // Check payment status
+                if (session.payment_status === 'paid') {
+                    // Payment successful, send success message to user
+                    res.send({
+                        fulfillmentMessages: [
+                            {
+                                text: {
+                                    text: ['Payment successful!, Payment ID: ' + session.payment_intent + 'Payment Information: ' + session.customer_details.email + 'Payment Amount: ' + session.amount_total / 100 + 'Payment Status: ' + session.payment_status + 'Payment Date: ' + session.created + 'Payment Currency: ' + session.currency + 'Payment Method: ' + session.payment_method_types + 'Payment Description: ' + session.line_items[0].description + 'Payment Quantity: ' + session.line_items[0].quantity + 'Payment Name: ' + session.line_items[0].name + 'Payment Mode: ' + session.mode + 'Payment URL: ' + session.url + 'Payment Stat'],
+                                },
+                            },
+                        ],
+                    });
+                } else {
+                    // Payment failed, send failure message to user
+                    res.send({
+                        fulfillmentMessages: [
+                            {
+                                text: {
+                                    text: ['Payment failed.'],
+                                },
+                            },
+                        ],
+                    });
+                }
+                // Send message to user through Dialogflow
                 res.send({
                     fulfillmentMessages: [
                         {
@@ -86,33 +111,6 @@ app.post('/webhook', async (req, res) => {
                         },
                     ],
                 });
-                // Send message to user through Dialogflow
-                if (session.payment_status === 'paid') {
-                    // Payment successful, send success message to user
-                    // You can use Dialogflow's fulfillment webhook to send a message to the user through a messaging platform
-                    // You can use the session object to get the payment information
-                    res.send({
-                        fulfillmentMessages: [
-                            {
-                                text: {
-                                    text: ['Payment successful!, Payment ID: ' + session.payment_intent + 'Payment Information: ' + session.customer_details.email + 'Payment Amount: ' + session.amount_total / 100 + 'Payment Status: ' + session.payment_status + 'Payment Date: ' + session.created + 'Payment Currency: ' + session.currency + 'Payment Method: ' + session.payment_method_types + 'Payment Description: ' + session.line_items[0].description + 'Payment Quantity: ' + session.line_items[0].quantity + 'Payment Name: ' + session.line_items[0].name + 'Payment Mode: ' + session.mode + 'Payment URL: ' + session.url + 'Payment Stat'],
-                                },
-                            },
-                        ],
-                    });
-                } else {
-                    // Payment failed, send failure message to user
-                    // You can use Dialogflow's fulfillment webhook to send a message to the user through a messaging platform
-                    res.send({
-                        fulfillmentMessages: [
-                            {
-                                text: {
-                                    text: ['Payment failed.'],
-                                },
-                            },
-                        ],
-                    });
-                }
                 break;
             default:
                 res.send({
@@ -133,6 +131,7 @@ app.post('/webhook', async (req, res) => {
         });
     }
 });
+
 
 
 
