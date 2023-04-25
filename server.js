@@ -54,9 +54,9 @@ app.post('/webhook', async (req, res) => {
                         type: 'card',
                         card: {
                             number: '4242424242424242',
-                            exp_month: params.expMonth,
-                            exp_year: params.expYear,
-                            cvc: params.cvc,
+                            exp_month: '04',
+                            exp_year: '2024',
+                            cvc: '424',
                         },
                     });
 
