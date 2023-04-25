@@ -45,6 +45,7 @@ app.post('/webhook', async (req, res) => {
                 });
                 break;
             case 'HandlePayment':
+                stripe.apiKey = process.env.STRIPE_PRIVATE_KEY;
                 const session = await stripe.checkout.sessions.create({
                     payment_method_types: ['card'],
                     line_items: [{ price: 'PRICE_ID', quantity: 1 }],
