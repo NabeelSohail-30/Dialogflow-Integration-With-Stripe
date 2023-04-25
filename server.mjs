@@ -52,10 +52,68 @@ const intentResponses = {
                         ],
                         [
                             {
-                                "type": "custom",
-                                "webview": {
-                                    "height": "tall",
-                                    "src": "https://yourwebpage.com/paymentform"
+                                "type": "input",
+                                "name": "name",
+                                "label": "Name on Card",
+                                "required": true
+                            },
+                            {
+                                "type": "input",
+                                "name": "card_number",
+                                "label": "Card Number",
+                                "required": true,
+                                "validation": {
+                                    "regex": "^\\d{16}$",
+                                    "errorMessage": "Please enter a valid 16 digit card number"
+                                }
+                            },
+                            {
+                                "type": "input",
+                                "name": "expiry_date",
+                                "label": "Expiry Date (MM/YY)",
+                                "required": true,
+                                "validation": {
+                                    "regex": "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
+                                    "errorMessage": "Please enter a valid expiry date in the format MM/YY"
+                                }
+                            },
+                            {
+                                "type": "input",
+                                "name": "cvc",
+                                "label": "CVC",
+                                "required": true,
+                                "validation": {
+                                    "regex": "^\\d{3,4}$",
+                                    "errorMessage": "Please enter a valid 3 or 4 digit CVC number"
+                                }
+                            }
+                        ],
+                        [
+                            {
+                                "type": "button",
+                                "text": "Submit",
+                                "onClick": {
+                                    "action": {
+                                        "actionMethodName": "makePayment",
+                                        "parameters": [
+                                            {
+                                                "key": "name",
+                                                "value": "$name"
+                                            },
+                                            {
+                                                "key": "card_number",
+                                                "value": "$card_number"
+                                            },
+                                            {
+                                                "key": "expiry_date",
+                                                "value": "$expiry_date"
+                                            },
+                                            {
+                                                "key": "cvc",
+                                                "value": "$cvc"
+                                            }
+                                        ]
+                                    }
                                 }
                             }
                         ]
