@@ -2,8 +2,12 @@ import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import Stripe from 'stripe';
+import dotenv from 'dotenv';
+import stripePackage from 'stripe';
 
-const stripe = new Stripe('your_stripe_secret_key', { apiVersion: '2020-08-27' });
+dotenv.config();
+const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY);
+
 
 const app = express();
 app.use(express.json());
