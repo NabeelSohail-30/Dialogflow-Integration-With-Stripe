@@ -93,7 +93,7 @@ app.post('/webhook', async (req, res) => {
     } catch (err) {
         console.log(err);
         res.send({
-            fulfillmentText: 'Something went wrong on the server. Please try again later.',
+            fulfillmentText: err.message,
         });
     }
 });
