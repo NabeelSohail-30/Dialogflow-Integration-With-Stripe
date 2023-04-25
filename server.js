@@ -58,8 +58,6 @@ app.post('/webhook', async (req, res) => {
                             exp_year: params.expYear,
                             cvc: params.cvc,
                         },
-                        email: 'example@example.com',
-                        name: 'payment intent api',
                     });
 
                     let paymentIntent = await stripe.paymentIntents.create({
