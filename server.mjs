@@ -1,6 +1,8 @@
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
+import { WebhookClient } from 'dialogflow-fulfillment';
+import stripe from 'stripe';
 
 const app = express()
 app.use(express.json())
@@ -30,6 +32,7 @@ const intentResponses = {
             }
         ]
     },
+    "HandlePayment": handlePayment,
     default: {
         fulfillmentMessages: [
             {
@@ -45,10 +48,10 @@ const intentResponses = {
 
 app.post('/webhook', async (req, res) => {
     try {
-        const { queryResult } = req.body;
-        const intentName = queryResult.intent.displayName;
-        const response = intentResponses[intentName] || intentResponses.default;
-        res.send({ fulfillmentMessages: response.fulfillmentMessages });
+        const agent = new WebhookClient({ request: req, response: res });
+        const intentName = agent.intent.displayName;
+        const intentHandler = intentResponses[intentName] || intentResponses.default;
+        await intentHandler(agent);
     } catch (err) {
         console.log(err);
         res.send({
@@ -56,7 +59,7 @@ app.post('/webhook', async (req, res) => {
                 {
                     "text": {
                         "text": [
-                            "something is wrong in server, please try again"
+                            "Something went wrong on our server. Please try again later."
                         ]
                     }
                 }
@@ -74,3 +77,24 @@ app.use('/', express.static(path.join(__dirname, "/Web")));
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+
+/*---------------------Handle Payment--------------------------*/
+
+async function handlePayment(agent) {
+    const stripe_secret_key = "YOUR_STRIPE_SECRET_KEY";
+    const { amount, token } = agent.parameters;
+    const stripeClient = new stripe(stripe_secret_key);
+    try {
+        const charge = await stripeClient.charges.create({
+            amount: amount * 100,
+            currency: "usd",
+            source: token.id,
+            description: "Payment from Dialogflow"
+        });
+        console.log("charge", charge);
+        agent.add(`Your payment of ${amount} USD was successful. Thank you!`);
+    } catch (err) {
+        console.log(err);
+        agent.add("Sorry, there was an error processing your payment. Please try again later.");
+    }
+}
