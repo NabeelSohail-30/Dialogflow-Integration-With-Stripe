@@ -27,7 +27,7 @@ const intentResponses = {
             {
                 text: {
                     text: [
-                        'Hello There, This is a test webhook to integrtate with dialogflow and handle stripe payment',
+                        'Hello There, This is a test webhook to integrate with Dialogflow and handle Stripe payment',
                     ],
                 },
             },
@@ -50,7 +50,14 @@ const intentResponses = {
                                 },
                             },
                         ],
-                        [{ type: 'button', icon: { type: 'chevron_right', color: '#FF9800', }, text: 'Proceed to Checkout', link: 'https://yourwebsite.com/checkout', },],
+                        [
+                            {
+                                type: 'button',
+                                icon: { type: 'chevron_right', color: '#FF9800' },
+                                text: 'Proceed to Checkout',
+                                postback: 'createStripeCheckoutSession',
+                            },
+                        ],
                     ],
                 },
             },
@@ -73,22 +80,81 @@ app.post('/webhook', async (req, res) => {
         const { queryResult } = req.body;
         const intentName = queryResult.intent.displayName;
         const response = intentResponses[intentName] || intentResponses.default;
+
+        if (intentName === 'HandlePayment') {
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [{ price: 'PRICE_ID', quantity: 1 }],
+                mode: 'payment',
+                success_url: 'https://yourwebsite.com/success',
+                cancel_url: 'https://yourwebsite.com/cancel',
+            });
+
+            response.fulfillmentMessages.push({
+                payload: {
+                    richContent: [
+                        [
+                            {
+                                type: 'info',
+                                title: 'Payment Information',
+                                subtitle: 'Please click the button below to proceed with the payment',
+                                image: {
+                                    src: {
+                                        rawUrl: 'https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png',
+                                    },
+                                },
+                            },
+                        ],
+                        [
+                            {
+                                type: 'button',
+                                icon: { type: 'chevron_right', color: '#FF9800' },
+                                text: 'Proceed to Checkout',
+                                openUrlAction: {
+                                    url: session.url,
+                                },
+                            },
+                        ],
+                    ],
+                },
+            });
+        }
+
         res.send({ fulfillmentMessages: response.fulfillmentMessages });
     } catch (err) {
         console.log(err);
         res.send({
-            "fulfillmentMessages": [
+            fulfillmentMessages: [
                 {
-                    "text": {
-                        "text": [
-                            "something is wrong in server, please try again"
-                        ]
-                    }
-                }
-            ]
-        })
+                    text: {
+                        text: ['Something went wrong on the server. Please try again later.'],
+                    },
+                },
+            ],
+        });
     }
 });
+
+app.post('/stripe-webhook', (req, res) => {
+    const event = req.body;
+
+    if (event.type === 'checkout.session.completed') {
+        // payment succeeded, handle accordingly
+        const session = event.data.object;
+        const paymentAmount = session.amount_total / 100;
+        const customerEmail = session.customer_details.email;
+        console.log(`Payment of ${paymentAmount} was successful for ${customerEmail}`);
+    } else if (event.type === 'checkout.session.failed') {
+        // payment failed, handle accordingly
+        const session = event.data.object;
+        const paymentAmount = session.amount_total / 100;
+        const customerEmail = session.customer_details.email;
+        console.log(`Payment of ${paymentAmount} failed for ${customerEmail}`);
+    }
+
+    res.sendStatus(200);
+});
+
 
 /*---------------------Checkout Handler--------------------------*/
 
