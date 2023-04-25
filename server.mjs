@@ -37,36 +37,36 @@ const intentResponses = {
             },
         ],
     },
-    HandlePayment: {
-        fulfillmentMessages: [
-            {
-                payload: {
-                    richContent: [
-                        [
-                            {
-                                type: 'info',
-                                title: 'Payment Information',
-                                subtitle: 'Please click the button below to proceed with the payment',
-                                image: {
-                                    src: {
-                                        rawUrl: 'https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png',
-                                    },
-                                },
-                            },
-                        ],
-                        [
-                            {
-                                type: 'button',
-                                icon: { type: 'chevron_right', color: '#FF9800' },
-                                text: 'Proceed to Checkout',
-                                postback: 'createStripeCheckoutSession',
-                            },
-                        ],
-                    ],
-                },
-            },
-        ],
-    },
+    // HandlePayment: {
+    //     fulfillmentMessages: [
+    //         {
+    //             payload: {
+    //                 richContent: [
+    //                     [
+    //                         {
+    //                             type: 'info',
+    //                             title: 'Payment Information',
+    //                             subtitle: 'Please click the button below to proceed with the payment',
+    //                             image: {
+    //                                 src: {
+    //                                     rawUrl: 'https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png',
+    //                                 },
+    //                             },
+    //                         },
+    //                     ],
+    //                     [
+    //                         {
+    //                             type: 'button',
+    //                             icon: { type: 'chevron_right', color: '#FF9800' },
+    //                             text: 'Proceed to Checkout',
+    //                             postback: 'createStripeCheckoutSession',
+    //                         },
+    //                     ],
+    //                 ],
+    //             },
+    //         },
+    //     ],
+    // },
 
     default: {
         fulfillmentMessages: [
