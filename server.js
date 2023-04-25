@@ -30,11 +30,11 @@ app.post('/webhook', async (req, res) => {
     try {
         const { queryResult } = req.body;
         const intentName = queryResult.intent.displayName;
-        const email = queryResult.parameters.fields.email.stringValue;
-        const cardNumber = queryResult.parameters.fields.cardNumber.stringValue;
-        const cardExpMonth = queryResult.parameters.fields.cardExpMonth.stringValue;
-        const cardExpYear = queryResult.parameters.fields.cardExpYear.stringValue;
-        const cardCvc = queryResult.parameters.fields.cardCvc.stringValue;
+        const email = queryResult.parameters.email;
+        const cardNumber = queryResult.parameters.cardNumber;
+        const cardExpMonth = queryResult.parameters.cardExpMonth;
+        const cardExpYear = queryResult.parameters.cardExpYear;
+        const cardCvc = queryResult.parameters.cardCvc;
 
         switch (intentName) {
             case 'Default Welcome Intent':
