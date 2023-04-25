@@ -4,7 +4,9 @@ import Stripe from 'stripe';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY);
+const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY, {
+    apiVersion: '2020-08-27',
+});
 
 
 const app = express();
@@ -43,7 +45,7 @@ app.post('/webhook', async (req, res) => {
                 });
                 break;
             case 'HandlePayment':
-                stripe.apiKey = process.env.STRIPE_PRIVATE_KEY;
+                // stripe.apiKey = process.env.STRIPE_PRIVATE_KEY;
                 const session = await stripe.checkout.sessions.create({
                     payment_method_types: ['card'],
                     line_items: [{ price: 'PRICE_ID', quantity: 1 }],
