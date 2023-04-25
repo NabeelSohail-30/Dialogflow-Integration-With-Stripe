@@ -62,7 +62,6 @@ app.post('/webhook', async (req, res) => {
                     cancel_url: 'https://yourwebsite.com/cancel',
                 });
 
-
                 res.send({
                     fulfillmentMessages: [
                         {
@@ -75,12 +74,13 @@ app.post('/webhook', async (req, res) => {
                                 richContent: [
                                     [
                                         {
-                                            type: 'button',
-                                            icon: { type: 'chevron_right', color: '#FF9800' },
-                                            text: 'Proceed to Checkout',
-                                            openUrlAction: {
-                                                url: session.url,
-                                            },
+                                            type: 'chips',
+                                            options: [
+                                                {
+                                                    text: 'Checkout',
+                                                    link: session.url,
+                                                },
+                                            ],
                                         },
                                     ],
                                 ],
