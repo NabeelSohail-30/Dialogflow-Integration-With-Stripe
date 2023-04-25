@@ -56,33 +56,7 @@ const intentResponses = {
             },
         ],
     },
-    PaymentSuccess: {
-        fulfillmentMessages: [
-            {
-                text: {
-                    text: ['Your payment was successful. Thank you for your purchase!'],
-                },
-            },
-        ],
-    },
-    PaymentFailure: {
-        fulfillmentMessages: [
-            {
-                text: {
-                    text: ['There was an error processing your payment. Please try again.'],
-                },
-            },
-        ],
-    },
-    PaymentCancel: {
-        fulfillmentMessages: [
-            {
-                text: {
-                    text: ['You have cancelled your payment.'],
-                },
-            },
-        ],
-    },
+
     default: {
         fulfillmentMessages: [
             {
@@ -98,66 +72,21 @@ app.post('/webhook', async (req, res) => {
     try {
         const { queryResult } = req.body;
         const intentName = queryResult.intent.displayName;
-        let message;
-        switch (intentName) {
-            case 'HandlePayment':
-                const session = await stripe.checkout.sessions.create({
-                    payment_method_types: ['card'],
-                    line_items: [
-                        {
-                            price_data: {
-                                currency: 'usd',
-                                product_data: {
-                                    name: 'Test Product',
-                                },
-                                unit_amount: 1000,
-                            },
-                            quantity: 1,
-                        },
-                    ],
-                    mode: 'payment',
-                    success_url: 'https://yourwebpage.com/success',
-                    cancel_url: 'https://yourwebpage.com/cancel',
-                });
-                res.redirect(session.url);
-                return;
-            case 'HandlePayment.Success':
-                message = `Payment successful. Your payment id is ${queryResult.parameters.payment_id}`;
-                break;
-            case 'HandlePayment.Cancel':
-                message = 'Payment cancelled by user';
-                break;
-            case 'HandlePayment.Failure':
-                message = `Payment failed. Error message: ${queryResult.parameters.error_message}`;
-                break;
-            default:
-                message = 'Sorry, I did not understand';
-        }
-        const response = {
-            fulfillmentMessages: [
-                {
-                    text: {
-                        text: [
-                            message,
-                        ],
-                    },
-                },
-            ],
-        };
-        res.send(response);
+        const response = intentResponses[intentName] || intentResponses.default;
+        res.send({ fulfillmentMessages: response.fulfillmentMessages });
     } catch (err) {
         console.log(err);
         res.send({
-            fulfillmentMessages: [
+            "fulfillmentMessages": [
                 {
-                    text: {
-                        text: [
-                            'Something went wrong with the payment process. Please try again',
-                        ],
-                    },
-                },
-            ],
-        });
+                    "text": {
+                        "text": [
+                            "something is wrong in server, please try again"
+                        ]
+                    }
+                }
+            ]
+        })
     }
 });
 
