@@ -48,7 +48,15 @@ app.post('/webhook', async (req, res) => {
                 // stripe.apiKey = process.env.STRIPE_PRIVATE_KEY;
                 const session = await stripe.checkout.sessions.create({
                     payment_method_types: ['card'],
-                    line_items: [],
+                    line_items: [
+                        {
+                            name: 'Dummy Item',
+                            description: 'This is a dummy item for testing purposes.',
+                            amount: 1000,
+                            currency: 'usd',
+                            quantity: 1,
+                        }
+                    ],
                     mode: 'payment',
                     success_url: 'https://yourwebsite.com/success',
                     cancel_url: 'https://yourwebsite.com/cancel',
