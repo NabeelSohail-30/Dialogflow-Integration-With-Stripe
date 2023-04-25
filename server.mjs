@@ -23,121 +23,82 @@ app.get('/ping', (req, res) => {
 
 const port = process.env.PORT || 5001;
 
-/*---------------------Dialogflow Fulfillments--------------------------*/
-
-const intentResponses = {
-    'Default Welcome Intent': {
-        fulfillmentMessages: [
-            {
-                text: {
-                    text: [
-                        'Hello There, This is a test webhook to integrate with Dialogflow and handle Stripe payment',
-                    ],
-                },
-            },
-        ],
-    },
-    // HandlePayment: {
-    //     fulfillmentMessages: [
-    //         {
-    //             payload: {
-    //                 richContent: [
-    //                     [
-    //                         {
-    //                             type: 'info',
-    //                             title: 'Payment Information',
-    //                             subtitle: 'Please click the button below to proceed with the payment',
-    //                             image: {
-    //                                 src: {
-    //                                     rawUrl: 'https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png',
-    //                                 },
-    //                             },
-    //                         },
-    //                     ],
-    //                     [
-    //                         {
-    //                             type: 'button',
-    //                             icon: { type: 'chevron_right', color: '#FF9800' },
-    //                             text: 'Proceed to Checkout',
-    //                             postback: 'createStripeCheckoutSession',
-    //                         },
-    //                     ],
-    //                 ],
-    //             },
-    //         },
-    //     ],
-    // },
-
-    default: {
-        fulfillmentMessages: [
-            {
-                text: {
-                    text: ['Sorry, I did not get that. Please try again.'],
-                },
-            },
-        ],
-    },
-};
+/*---------------------Dialogflow Webhook--------------------------*/
 
 app.post('/webhook', async (req, res) => {
     try {
         const { queryResult } = req.body;
         const intentName = queryResult.intent.displayName;
-        const response = intentResponses[intentName] || intentResponses.default;
 
-        if (intentName === 'HandlePayment') {
-            const session = await stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [{ price: 'PRICE_ID', quantity: 1 }],
-                mode: 'payment',
-                success_url: 'https://yourwebsite.com/success',
-                cancel_url: 'https://yourwebsite.com/cancel',
-            });
+        switch (intentName) {
+            case 'Default Welcome Intent':
+                res.send({
+                    "fulfillmentMessages": [
+                        {
+                            "text": {
+                                "text": [
+                                    "Hello There, Welcome to SAF Collegiate. How can I help you?"
+                                ]
+                            }
+                        }
+                    ]
+                });
+                break;
+            case 'HandlePayment':
+                const session = await stripe.checkout.sessions.create({
+                    payment_method_types: ['card'],
+                    line_items: [{ price: 'PRICE_ID', quantity: 1 }],
+                    mode: 'payment',
+                    success_url: 'https://yourwebsite.com/success',
+                    cancel_url: 'https://yourwebsite.com/cancel',
+                });
 
-            response.fulfillmentMessages.push({
-                payload: {
-                    richContent: [
-                        [
-                            {
-                                type: 'info',
-                                title: 'Payment Information',
-                                subtitle: 'Please click the button below to proceed with the payment',
-                                image: {
-                                    src: {
-                                        rawUrl: 'https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png',
-                                    },
-                                },
+                res.send({
+                    fulfillmentMessages: [
+                        {
+                            text: {
+                                text: ['Please click the button below to proceed to checkout.'],
                             },
-                        ],
-                        [
-                            {
-                                type: 'button',
-                                icon: { type: 'chevron_right', color: '#FF9800' },
-                                text: 'Proceed to Checkout',
-                                openUrlAction: {
-                                    url: session.url,
-                                },
+                        },
+                        {
+                            payload: {
+                                richContent: [
+                                    [
+                                        {
+                                            type: 'button',
+                                            icon: { type: 'chevron_right', color: '#FF9800' },
+                                            text: 'Proceed to Checkout',
+                                            openUrlAction: {
+                                                url: session.url,
+                                            },
+                                        },
+                                    ],
+                                ],
                             },
-                        ],
+                        },
                     ],
-                },
-            });
+                });
+                break;
+            default:
+                res.send({
+                    fulfillmentMessages: [
+                        {
+                            text: {
+                                text: ['Sorry, I did not get that. Please try again.'],
+                            },
+                        },
+                    ],
+                });
+                break;
         }
-
-        res.send({ fulfillmentMessages: response.fulfillmentMessages });
     } catch (err) {
         console.log(err);
         res.send({
-            fulfillmentMessages: [
-                {
-                    text: {
-                        text: ['Something went wrong on the server. Please try again later.'],
-                    },
-                },
-            ],
+            fulfillmentText: 'Something went wrong on the server. Please try again later.',
         });
     }
 });
+
 
 app.post('/stripe-webhook', (req, res) => {
     const event = req.body;
