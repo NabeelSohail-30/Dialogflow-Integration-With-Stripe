@@ -5,291 +5,189 @@ import Stripe from 'stripe';
 
 const stripe = new Stripe('your_stripe_secret_key', { apiVersion: '2020-08-27' });
 
-const app = express()
-app.use(express.json())
-app.use(cors())
+const app = express();
+app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.sendStatus(200);
 });
 
-app.get("/ping", (req, res) => {
-    res.send("ping back");
-})
+app.get('/ping', (req, res) => {
+    res.send('ping back');
+});
 
 const port = process.env.PORT || 5001;
 
-/*---------------------Dialogflow Webhook--------------------------*/
+/*---------------------Dialogflow Fulfillments--------------------------*/
 
 const intentResponses = {
-    "Default Welcome Intent": {
+    'Default Welcome Intent': {
         fulfillmentMessages: [
             {
                 text: {
                     text: [
-                        "Hello There, This is a test webhook to integrtate with dialogflow and handle stripe payment"
-                    ]
-                }
-            }
-        ]
+                        'Hello There, This is a test webhook to integrtate with dialogflow and handle stripe payment',
+                    ],
+                },
+            },
+        ],
     },
-    "HandlePayment": {
-        "fulfillmentMessages": [
+    HandlePayment: {
+        fulfillmentMessages: [
             {
-                "payload": {
-                    "richContent": [
+                payload: {
+                    richContent: [
                         [
                             {
-                                "type": "info",
-                                "title": "Payment Information",
-                                "subtitle": "Please fill in the details below to proceed with the payment",
-                                "image": {
-                                    "src": {
-                                        "rawUrl": "https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png"
-                                    }
-                                }
-                            }
+                                type: 'info',
+                                title: 'Payment Information',
+                                subtitle: 'Please click the button below to proceed with the payment',
+                                image: {
+                                    src: {
+                                        rawUrl: 'https://www.gstatic.com/dialogflow/images/branding/dialogflow_logo_128dp.png',
+                                    },
+                                },
+                            },
                         ],
-                        [
-                            {
-                                "type": "input",
-                                "name": "name",
-                                "label": "Name on Card",
-                                "required": true
-                            },
-                            {
-                                "type": "input",
-                                "name": "card_number",
-                                "label": "Card Number",
-                                "required": true,
-                                "validation": {
-                                    "regex": "^\\d{16}$",
-                                    "errorMessage": "Please enter a valid 16 digit card number"
-                                }
-                            },
-                            {
-                                "type": "input",
-                                "name": "expiry_date",
-                                "label": "Expiry Date (MM/YY)",
-                                "required": true,
-                                "validation": {
-                                    "regex": "^(0[1-9]|1[0-2])\\/?([0-9]{4}|[0-9]{2})$",
-                                    "errorMessage": "Please enter a valid expiry date in the format MM/YY"
-                                }
-                            },
-                            {
-                                "type": "input",
-                                "name": "cvc",
-                                "label": "CVC",
-                                "required": true,
-                                "validation": {
-                                    "regex": "^\\d{3,4}$",
-                                    "errorMessage": "Please enter a valid 3 or 4 digit CVC number"
-                                }
-                            }
-                        ],
-                        [
-                            {
-                                "type": "button",
-                                "text": "Submit",
-                                "onClick": {
-                                    "action": {
-                                        "actionMethodName": "makePayment",
-                                        "parameters": [
-                                            {
-                                                "key": "name",
-                                                "value": "$name"
-                                            },
-                                            {
-                                                "key": "card_number",
-                                                "value": "$card_number"
-                                            },
-                                            {
-                                                "key": "expiry_date",
-                                                "value": "$expiry_date"
-                                            },
-                                            {
-                                                "key": "cvc",
-                                                "value": "$cvc"
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        ]
-                    ]
-                }
-            }
-        ]
+                        [{ type: 'button', icon: { type: 'chevron_right', color: '#FF9800', }, text: 'Proceed to Checkout', link: 'https://yourwebsite.com/checkout', },],
+                    ],
+                },
+            },
+        ],
+    },
+    PaymentSuccess: {
+        fulfillmentMessages: [
+            {
+                text: {
+                    text: ['Your payment was successful. Thank you for your purchase!'],
+                },
+            },
+        ],
+    },
+    PaymentFailure: {
+        fulfillmentMessages: [
+            {
+                text: {
+                    text: ['There was an error processing your payment. Please try again.'],
+                },
+            },
+        ],
+    },
+    PaymentCancel: {
+        fulfillmentMessages: [
+            {
+                text: {
+                    text: ['You have cancelled your payment.'],
+                },
+            },
+        ],
     },
     default: {
         fulfillmentMessages: [
             {
                 text: {
-                    text: [
-                        "Sorry, I didn't get that. Please try again"
-                    ]
-                }
-            }
-        ]
-    }
+                    text: ['Sorry, I did not get that. Please try again.'],
+                },
+            },
+        ],
+    },
 };
 
 app.post('/webhook', async (req, res) => {
     try {
         const { queryResult } = req.body;
         const intentName = queryResult.intent.displayName;
-        const response = intentResponses[intentName] || intentResponses.default;
-        res.send({ fulfillmentMessages: response.fulfillmentMessages });
+        let message;
+        switch (intentName) {
+            case 'HandlePayment':
+                const session = await stripe.checkout.sessions.create({
+                    payment_method_types: ['card'],
+                    line_items: [
+                        {
+                            price_data: {
+                                currency: 'usd',
+                                product_data: {
+                                    name: 'Test Product',
+                                },
+                                unit_amount: 1000,
+                            },
+                            quantity: 1,
+                        },
+                    ],
+                    mode: 'payment',
+                    success_url: 'https://yourwebpage.com/success',
+                    cancel_url: 'https://yourwebpage.com/cancel',
+                });
+                res.redirect(session.url);
+                return;
+            case 'HandlePayment.Success':
+                message = `Payment successful. Your payment id is ${queryResult.parameters.payment_id}`;
+                break;
+            case 'HandlePayment.Cancel':
+                message = 'Payment cancelled by user';
+                break;
+            case 'HandlePayment.Failure':
+                message = `Payment failed. Error message: ${queryResult.parameters.error_message}`;
+                break;
+            default:
+                message = 'Sorry, I did not understand';
+        }
+        const response = {
+            fulfillmentMessages: [
+                {
+                    text: {
+                        text: [
+                            message,
+                        ],
+                    },
+                },
+            ],
+        };
+        res.send(response);
     } catch (err) {
         console.log(err);
         res.send({
-            "fulfillmentMessages": [
+            fulfillmentMessages: [
                 {
-                    "text": {
-                        "text": [
-                            "something is wrong in server, please try again"
-                        ]
-                    }
-                }
-            ]
-        })
-    }
-});
-
-/*---------------------Payment Form Handler--------------------------*/
-
-app.post('/process_payment', async (req, res) => {
-    try {
-        const { name, email, card_number, amount } = req.body;
-
-        // Validate the form fields
-        if (!name || !email || !card_number || !amount) {
-            return res.send({
-                "fulfillmentMessages": [
-                    {
-                        "text": {
-                            "text": [
-                                "Please fill in all the fields to proceed with the payment."
-                            ]
-                        }
-                    }
-                ]
-            });
-        }
-
-        if (!Stripe.paymentMethods.card.validateCardNumber(card_number)) {
-            return res.send({
-                "fulfillmentMessages": [
-                    {
-                        "text": {
-                            "text": [
-                                "Please enter a valid card number."
-                            ]
-                        }
-                    }
-                ]
-            });
-        }
-
-        if (!Stripe.paymentMethods.card.validateExpiryDate(month, year)) {
-            return res.send({
-                "fulfillmentMessages": [
-                    {
-                        "text": {
-                            "text": [
-                                "Please enter a valid expiry date."
-                            ]
-                        }
-                    }
-                ]
-            });
-        }
-
-        const paymentMethod = await stripe.paymentMethods.create({
-            type: 'card',
-            card: {
-                number: card_number,
-                exp_month: month,
-                exp_year: year,
-            },
-            billing_details: {
-                name: name,
-                email: email
-            }
-        });
-
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount * 100,
-            currency: 'usd',
-            payment_method: paymentMethod.id,
-            confirmation_method: 'manual',
-            confirm: true
-        });
-
-        if (paymentIntent.status === 'requires_action') {
-            const { error } = await stripe.confirmCardPayment(
-                paymentIntent.client_secret
-            );
-            if (error) {
-                console.log('Payment failed:', error);
-                res.send({
-                    "fulfillmentMessages": [
-                        {
-                            "text": {
-                                "text": [
-                                    "Payment failed. Please try again later."
-                                ]
-                            }
-                        }
-                    ]
-                });
-            } else {
-                console.log('Payment succeeded:', paymentIntent.id);
-                res.send({
-                    "fulfillmentMessages": [
-                        {
-                            "text": {
-                                "text": [
-                                    "Payment successful. Your payment ID is: " + paymentIntent.id
-                                ]
-                            }
-                        }
-                    ]
-                });
-            }
-        } else {
-            console.log('Payment succeeded:', paymentIntent.id);
-            res.send({
-                "fulfillmentMessages": [
-                    {
-                        "text": {
-                            "text": [
-                                "Payment successful. Your payment ID is: " + paymentIntent.id
-                            ]
-                        }
-                    }
-                ]
-            });
-        }
-    } catch (err) {
-        console.log(err);
-        res.send({
-            "fulfillmentMessages": [
-                {
-                    "text": {
-                        "text": [
-                            "Payment failed. Please try again later."
-                        ]
-                    }
-                }
-            ]
+                    text: {
+                        text: [
+                            'Something went wrong with the payment process. Please try again',
+                        ],
+                    },
+                },
+            ],
         });
     }
 });
 
-/*---------------------Listen to App--------------------------*/
+/*---------------------Checkout Handler--------------------------*/
+
+// app.get('/checkout', async (req, res) => {
+//     const session = await stripe.checkout.sessions.create({
+//         payment_method_types: ['card'],
+//         line_items: [
+//             {
+//                 price_data: {
+//                     currency: 'usd',
+//                     product_data: {
+//                         name: 'Test Product',
+//                     },
+//                     unit_amount: 1000,
+//                 },
+//                 quantity: 1,
+//             },
+//         ],
+//         mode:
+//             'payment',
+//         success_url: 'https://yourwebpage.com/success',
+//         cancel_url: 'https://yourwebpage.com/cancel',
+//     });
+//     res.redirect(session.url);
+// });
+
+/*---------------------Server Listen--------------------------*/
 
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
