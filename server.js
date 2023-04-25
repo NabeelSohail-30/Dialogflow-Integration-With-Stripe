@@ -30,181 +30,74 @@ app.post('/webhook', async (req, res) => {
     try {
         const { queryResult } = req.body;
         const intentName = queryResult.intent.displayName;
-        const email = queryResult.parameters.email;
-        const cardNumber = queryResult.parameters.cardNumber;
-        const cardExpMonth = queryResult.parameters.cardExpMonth;
-        const cardExpYear = queryResult.parameters.cardExpYear;
-        const cardCvc = queryResult.parameters.cardCvc;
-
         switch (intentName) {
             case 'Default Welcome Intent':
-                {
-                    res.send({
-                        fulfillmentMessages: [
-                            {
-                                text: {
-                                    text: [
-                                        'Hello There, Welcome to SAF Collegiate. How can I help you?',
-                                    ],
-                                },
-                            },
-                        ],
-                    });
-                    break;
-                }
+                res.send({
+                    "fulfillmentMessages": [
+                        {
+                            "text": {
+                                "text": [
+                                    "Hello There, this is sample webhook to test stripe payment integration with dialogflow"
+                                ]
+                            }
+                        }
+                    ]
+                });
+                break;
             case 'HandlePayment':
-                {
-                    // Business validations for email
-                    if (!email) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide an email address.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-                    if (!validator.isEmail(email)) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a valid email address.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-
-                    // Business validations for card number
-                    if (!cardNumber) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a card number.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-                    if (!validator.isCreditCard(cardNumber)) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a valid card number.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-
-                    // Business validations for card expiration date
-                    const currentYear = new Date().getFullYear();
-                    const currentMonth = new Date().getMonth() + 1;
-                    if (!cardExpMonth || !cardExpYear) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a card expiration date.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-                    if (
-                        !validator.isInt(cardExpMonth, { min: 1, max: 12 }) ||
-                        !validator.isInt(cardExpYear, { min: currentYear, max: currentYear + 10 })
-                    ) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a valid card expiration date.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-
-                    // Business validations for card CVC
-                    if (!cardCvc) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a card CVC.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-                    if (!validator.isLength(cardCvc, { min: 3, max: 4 }) || !validator.isInt(cardCvc)) {
-                        res.send({
-                            fulfillmentMessages: [
-                                {
-                                    text: {
-                                        text: ['Please provide a valid card CVC.'],
-                                    },
-                                },
-                            ],
-                        });
-                        return;
-                    }
-
-                    // Create Stripe token and charge
-                    const stripeToken = await stripe.tokens.create({
-                        card: {
-                            number: cardNumber,
-                            exp_month: cardExpMonth,
-                            exp_year: cardExpYear,
-                            cvc: cardCvc,
+                const session = await stripe.checkout.sessions.create({
+                    payment_method_types: ['card'],
+                    line_items: [
+                        {
+                            name: 'Dummy Item',
+                            description: 'This is a dummy item for testing purposes.',
+                            amount: 1000,
+                            currency: 'usd',
+                            quantity: 1,
+                        }
+                    ],
+                    mode: 'payment',
+                    success_url: 'https://yourwebsite.com/success',
+                    cancel_url: 'https://yourwebsite.com/cancel',
+                });
+                res.send({
+                    fulfillmentMessages: [
+                        {
+                            text: {
+                                text: ['Please click the button below to proceed to checkout.'],
+                            },
                         },
-                    });
-
-                    const charge = await stripe.charges.create({
-                        amount: 1000,
-                        currency: 'usd',
-                        source: stripeToken.id,
-                        receipt_email: email,
-                    });
-
-                    // Send success message
-                    res.send({
-                        fulfillmentMessages: [
-                            {
-                                text: {
-                                    text: [`Payment successful. Charge ID: ${charge.id}`],
-                                },
+                        {
+                            payload: {
+                                richContent: [
+                                    [
+                                        {
+                                            type: 'chips',
+                                            options: [
+                                                {
+                                                    text: 'Checkout',
+                                                    link: session.url,
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                ],
                             },
-                        ],
-                    });
-                    break;
-                }
-
+                        },
+                    ],
+                });
+                break;
             default:
-                {
-                    res.send({
-                        fulfillmentMessages: [
-                            {
-                                text: {
-                                    text: ['Sorry, I did not get that. Please try again.'],
-                                },
+                res.send({
+                    fulfillmentMessages: [
+                        {
+                            text: {
+                                text: ['Sorry, I did not get that. Please try again.'],
                             },
-                        ],
-                    });
-                }
+                        },
+                    ],
+                });
+                break;
         }
     } catch (err) {
         console.log(err);
