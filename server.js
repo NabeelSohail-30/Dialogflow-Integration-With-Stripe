@@ -48,7 +48,7 @@ app.post('/webhook', async (req, res) => {
 
             case 'HandlePayment':
                 {
-                    const params = body.queryResult.parameters;
+                    const params = queryResult.parameters;
 
                     let paymentMethod = await stripe.paymentMethods.create({
                         type: 'card',
