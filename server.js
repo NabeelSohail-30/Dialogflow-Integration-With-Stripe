@@ -57,8 +57,8 @@ app.post('/webhook', async (req, res) => {
                         }
                     ],
                     mode: 'payment',
-                    // success_url: 'https://yourwebsite.com/success',
-                    // cancel_url: 'https://yourwebsite.com/cancel',
+                    uccess_url: '#',
+                    cancel_url: '#',
                 });
                 res.send({
                     fulfillmentMessages: [
@@ -90,7 +90,6 @@ app.post('/webhook', async (req, res) => {
                 if (session.payment_status === 'paid') {
                     // Payment successful, send success message to user
                     // You can use Dialogflow's fulfillment webhook to send a message to the user through a messaging platform
-                    // For example, if you're using Facebook Messenger, you can use the Facebook Messenger API to send a message to the user
                     // You can use the session object to get the payment information
                     res.send({
                         fulfillmentMessages: [
