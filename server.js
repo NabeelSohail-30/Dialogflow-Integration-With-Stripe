@@ -57,8 +57,8 @@ app.post('/webhook', async (req, res) => {
                         }
                     ],
                     mode: 'payment',
-                    success_url: '#',
-                    cancel_url: '#',
+                    success_url: 'https://yourwebsite.com/success',
+                    cancel_url: 'https://yourwebsite.com/cancel',
                 });
                 res.send({
                     fulfillmentMessages: [
