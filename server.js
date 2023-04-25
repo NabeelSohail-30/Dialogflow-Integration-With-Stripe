@@ -57,7 +57,7 @@ app.post('/webhook', async (req, res) => {
                         }
                     ],
                     mode: 'payment',
-                    uccess_url: '#',
+                    success_url: '#',
                     cancel_url: '#',
                 });
                 res.send({
