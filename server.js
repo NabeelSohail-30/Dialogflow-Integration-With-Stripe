@@ -58,11 +58,26 @@ app.post('/webhook', async (req, res) => {
                             exp_year: '2024',
                             cvc: '424',
                         },
+                        billing_details: {
+                            name: 'Jenny Rosen',
+                            email: 'example@example.com',
+                            address: {
+                                line1: '510 Townsend St',
+                                postal_code: '98140',
+                                city: 'San Francisco',
+                                state: 'CA',
+                                country: 'US',
+                            },
+                        },
+
                     });
 
                     let paymentIntent = await stripe.paymentIntents.create({
-                        amount: '250',
+                        amount: 250 * 100,
                         currency: 'usd',
+                        description: 'Test Payment',
+                        statement_descriptor: 'Test Payment',
+                        receipt_email: 'nabeel.sohail2630@outlook.com',
                         payment_method: paymentMethod.id,
                         confirm: true,
                     });
