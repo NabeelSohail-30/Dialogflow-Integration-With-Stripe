@@ -37,7 +37,7 @@ app.post('/webhook', async (req, res) => {
                         {
                             "text": {
                                 "text": [
-                                    "Hello There, Welcome to SAF Collegiate. How can I help you?"
+                                    "Hello There, this is sample webhook to test stripe payment integration with dialogflow"
                                 ]
                             }
                         }
@@ -45,7 +45,6 @@ app.post('/webhook', async (req, res) => {
                 });
                 break;
             case 'HandlePayment':
-                // stripe.apiKey = process.env.STRIPE_PRIVATE_KEY;
                 const session = await stripe.checkout.sessions.create({
                     payment_method_types: ['card'],
                     line_items: [
@@ -110,25 +109,25 @@ app.post('/webhook', async (req, res) => {
 });
 
 
-app.post('/stripe-webhook', (req, res) => {
-    const event = req.body;
+// app.post('/stripe-webhook', (req, res) => {
+//     const event = req.body;
 
-    if (event.type === 'checkout.session.completed') {
-        // payment succeeded, handle accordingly
-        const session = event.data.object;
-        const paymentAmount = session.amount_total / 100;
-        const customerEmail = session.customer_details.email;
-        console.log(`Payment of ${paymentAmount} was successful for ${customerEmail}`);
-    } else if (event.type === 'checkout.session.failed') {
-        // payment failed, handle accordingly
-        const session = event.data.object;
-        const paymentAmount = session.amount_total / 100;
-        const customerEmail = session.customer_details.email;
-        console.log(`Payment of ${paymentAmount} failed for ${customerEmail}`);
-    }
+//     if (event.type === 'checkout.session.completed') {
+//         // payment succeeded, handle accordingly
+//         const session = event.data.object;
+//         const paymentAmount = session.amount_total / 100;
+//         const customerEmail = session.customer_details.email;
+//         console.log(`Payment of ${paymentAmount} was successful for ${customerEmail}`);
+//     } else if (event.type === 'checkout.session.failed') {
+//         // payment failed, handle accordingly
+//         const session = event.data.object;
+//         const paymentAmount = session.amount_total / 100;
+//         const customerEmail = session.customer_details.email;
+//         console.log(`Payment of ${paymentAmount} failed for ${customerEmail}`);
+//     }
 
-    res.sendStatus(200);
-});
+//     res.sendStatus(200);
+// });
 
 /*---------------------Server Listen--------------------------*/
 
