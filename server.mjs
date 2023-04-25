@@ -1,9 +1,7 @@
 import express from 'express';
-import path from 'path';
 import cors from 'cors';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
-import stripePackage from 'stripe';
 
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY);
@@ -120,32 +118,6 @@ app.post('/stripe-webhook', (req, res) => {
 
     res.sendStatus(200);
 });
-
-
-/*---------------------Checkout Handler--------------------------*/
-
-// app.get('/checkout', async (req, res) => {
-//     const session = await stripe.checkout.sessions.create({
-//         payment_method_types: ['card'],
-//         line_items: [
-//             {
-//                 price_data: {
-//                     currency: 'usd',
-//                     product_data: {
-//                         name: 'Test Product',
-//                     },
-//                     unit_amount: 1000,
-//                 },
-//                 quantity: 1,
-//             },
-//         ],
-//         mode:
-//             'payment',
-//         success_url: 'https://yourwebpage.com/success',
-//         cancel_url: 'https://yourwebpage.com/cancel',
-//     });
-//     res.redirect(session.url);
-// });
 
 /*---------------------Server Listen--------------------------*/
 
