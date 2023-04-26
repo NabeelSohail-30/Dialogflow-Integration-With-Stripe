@@ -93,7 +93,7 @@ app.post('/webhook', async (req, res) => {
                                                     "type": "info",
                                                     "title": "Payment Details",
                                                     "subtitle": "Thank you for your purchase.",
-                                                    "text": "Payment ID: " + paymentIntent.id + "\nPayment Method: " + paymentMethodType + "\nAmount: " + paymentIntent.amount / 100 + " " + paymentIntent.currency.toUpperCase() + "\nStatus: " + paymentIntent.status
+                                                    "text": "Payment ID: " + paymentIntent.id + "\nPayment Method: " + paymentMethod.type + "\nAmount: " + paymentIntent.amount / 100 + " " + paymentIntent.currency.toUpperCase() + "\nStatus: " + paymentIntent.status
                                                 }
                                             ]
                                     }
