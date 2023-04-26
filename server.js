@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const stripe = new Stripe('sk_test_51N0QtuEz1iiybq8tSR5FIhyDbWhorlBOMEb0nbUTKfBuqrx9r7SPARtRCQa8Za5ftvOtWdfRqv6j9xT6ambC30Qn00wBZjYx0X', {
+const stripe = new Stripe(process.env.STRIPE_PRIVATE_KEY, {
     apiVersion: '2020-08-27',
 });
 
