@@ -81,25 +81,74 @@ app.post('/webhook', async (req, res) => {
 
                     if (paymentIntent.status === 'succeeded') {
                         res.send({
-                            fulfillmentMessages: [
+                            "fulfillmentMessages": [
                                 {
-                                    text: {
-                                        text: ['Payment Successful Here is your Payment Details:'],
-                                    },
-                                    payload: {
-                                        "richContent":
+                                    "text": {
+                                        "text": [
+                                            "Payment Successful!. Here is your payment details:"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "payload": {
+                                        "richContent": [
                                             [
                                                 {
-                                                    "type": "info",
-                                                    "title": "Payment Details",
-                                                    "subtitle": "Thank you for your purchase.",
-                                                    "text": "Payment ID: " + paymentIntent.id + "\nPayment Method: " + paymentMethod.type + "\nAmount: " + paymentIntent.amount / 100 + " " + paymentIntent.currency.toUpperCase() + "\nStatus: " + paymentIntent.status
-                                                }
+                                                    "type": "description",
+                                                    "title": "Payment ID",
+                                                    "text": [
+                                                        paymentIntent.id
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "description",
+                                                    "title": "Payment Method",
+                                                    "text": [
+                                                        paymentMethod.type
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "description",
+                                                    "title": "Payment Amount",
+                                                    "text": [
+                                                        paymentIntent.amount
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "description",
+                                                    "title": "Payment Date",
+                                                    "text": [
+                                                        new Date(paymentIntent.created * 1000).toDateString()
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "description",
+                                                    "title": "Payment Status",
+                                                    "text": [
+                                                        paymentIntent.status
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "description",
+                                                    "title": "Payment Description",
+                                                    "text": [
+                                                        "Test Payment"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "chips",
+                                                    "options": [
+                                                        {
+                                                            "text": "Receipt",
+                                                            "link": paymentIntent.charges.data[0].receipt_url
+                                                        }
+                                                    ]
+                                                },
                                             ]
+                                        ]
                                     }
-
-                                },
-                            ],
+                                }
+                            ]
                         });
                     }
                     else {
