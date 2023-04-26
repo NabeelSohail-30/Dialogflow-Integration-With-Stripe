@@ -61,13 +61,11 @@ app.post('/webhook', async (req, res) => {
                         billing_details: {
                             name: 'Jenny Rosen',
                             email: 'example@example.com',
-                            address: {
-                                line1: '510 Townsend St',
-                                postal_code: '98140',
-                                city: 'San Francisco',
-                                state: 'CA',
-                                country: 'US',
-                            },
+                            // address: {
+                            //     city: 'San Francisco',
+                            //     state: 'CA',
+                            //     country: 'US',
+                            // },
                         },
 
                     });
@@ -77,7 +75,6 @@ app.post('/webhook', async (req, res) => {
                         currency: 'usd',
                         description: 'Test Payment',
                         statement_descriptor: 'Test Payment',
-                        receipt_email: 'nabeel.sohail2630@outlook.com',
                         payment_method: paymentMethod.id,
                         confirm: true,
                     });
@@ -87,7 +84,7 @@ app.post('/webhook', async (req, res) => {
                             fulfillmentMessages: [
                                 {
                                     text: {
-                                        text: ['Payment Successful'],
+                                        text: [`Payment Successful. Payment ID: ${paymentIntent.id} paymentMethod: ${paymentMethod.id} amount: ${paymentIntent.amount} currency: ${paymentIntent.currency} status: ${paymentIntent.status} Thank you for your purchase. Have a nice day.`],
                                     },
                                 },
                             ],
