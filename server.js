@@ -68,8 +68,8 @@ app.post('/webhook', async (req, res) => {
                     let paymentIntent = await stripe.paymentIntents.create({
                         amount: params.amount * 100,
                         currency: 'usd',
-                        description: params.description,
-                        statement_descriptor: params.description,
+                        description: 'Test Payment',
+                        statement_descriptor: 'Test Payment',
                         payment_method: paymentMethod.id,
                         confirm: true,
                     });
