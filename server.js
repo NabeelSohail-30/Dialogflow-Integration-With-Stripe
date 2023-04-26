@@ -84,7 +84,7 @@ app.post('/webhook', async (req, res) => {
                             fulfillmentMessages: [
                                 {
                                     text: {
-                                        text: [`Payment Successful. Payment ID: ${paymentIntent.id} paymentMethod: ${paymentMethod.id} amount: ${paymentIntent.amount} currency: ${paymentIntent.currency} status: ${paymentIntent.status} Thank you for your purchase. Have a nice day.`],
+                                        text: [`Payment Successful. Payment ID: ${paymentIntent.id} Payment Method: ${paymentMethod.type} Amount: ${paymentIntent.amount} ${paymentIntent.currency.toUpperCase()} Status: ${paymentIntent.status.toUpperCase()}. Thank you for your purchase. Have a nice day.`],
                                     },
                                 },
                             ],
