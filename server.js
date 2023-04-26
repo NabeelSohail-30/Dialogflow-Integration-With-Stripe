@@ -61,11 +61,6 @@ app.post('/webhook', async (req, res) => {
                         billing_details: {
                             name: 'Jenny Rosen',
                             email: 'example@example.com',
-                            // address: {
-                            //     city: 'San Francisco',
-                            //     state: 'CA',
-                            //     country: 'US',
-                            // },
                         },
 
                     });
@@ -111,7 +106,7 @@ app.post('/webhook', async (req, res) => {
                                                     "type": "description",
                                                     "title": "Payment Amount",
                                                     "text": [
-                                                        paymentIntent.amount
+                                                        paymentIntent.amount / 100 + ' ' + paymentIntent.currency.toUpperCase()
                                                     ]
                                                 },
                                                 {
@@ -132,7 +127,7 @@ app.post('/webhook', async (req, res) => {
                                                     "type": "description",
                                                     "title": "Payment Description",
                                                     "text": [
-                                                        "Test Payment"
+                                                        paymentIntent.description
                                                     ]
                                                 },
                                                 {
