@@ -53,23 +53,23 @@ app.post('/webhook', async (req, res) => {
                     let paymentMethod = await stripe.paymentMethods.create({
                         type: 'card',
                         card: {
-                            number: '4242424242424242',
-                            exp_month: '04',
-                            exp_year: '2024',
-                            cvc: '424',
+                            number: params.cardNumber,
+                            exp_month: params.expMonth,
+                            exp_year: params.expYear,
+                            cvc: params.cvc,
                         },
                         billing_details: {
-                            name: 'Jenny Rosen',
-                            email: 'example@example.com',
+                            name: params.name,
+                            email: params.email,
                         },
 
                     });
 
                     let paymentIntent = await stripe.paymentIntents.create({
-                        amount: 250 * 100,
+                        amount: params.amount * 100,
                         currency: 'usd',
-                        description: 'Test Payment',
-                        statement_descriptor: 'Test Payment',
+                        description: params.description,
+                        statement_descriptor: params.description,
                         payment_method: paymentMethod.id,
                         confirm: true,
                     });
